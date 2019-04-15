@@ -1,0 +1,210 @@
+# Clase que representa un vértice del grafo
+clase Vertice
+	nombre:string
+	x:double
+	y:double
+fin clase
+
+# Clase que representa una arista del grafo
+clase Arista
+	vertice1:string
+	vertice2:string
+	distancia:double
+fin clase
+
+# Clase que representa la ruta mínima entre vértices de un grafo
+clase RutaMinima
+	vertices:lista de string
+	distancia:double
+fin clase
+
+# Clase que representa un nodo en la matriz de cálculo de la ruta mínima
+clase NodoRutaMinima
+	vertice:string
+	distancia:double
+	precedente:NodoRutaMinima
+	definitivo:boolean
+fin clase
+
+contadorLetra:integer = 0
+# Se inicializan las listas que contendrán los vértices y las aristas
+vertices := nueva lista de Vertice
+aristas := nueva lista de Arista
+
+# Función que devuelve un nombre automático para un vértice
+funcion obtenerNombre():string
+	letras := ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
+	letra:string
+	si contadorLetra >= letras.length entonces
+		numeroAdicional:integer = contadorLetra/letras.length
+		letra = letras[contadorLetra % letras.length] + numeroAdicional
+	si no entonces
+		letra = letras[contadorLetra]
+	fin si
+	contadorLetra = contadorLetra + 1
+	retorne letra
+fin funcion
+
+# Función que crea un vértice
+funcion crearVertice(x:double, y:double, [nombre:string]):string
+	# Si el usuario no pasa un nombre, se crea uno automático
+	si nombre es nulo o vacío entonces
+		nombre = obtenerNombre()
+	fin si
+	# Se verifica que el nombre del vértice no exista
+	si obtenerVertice(nombre) es no nulo entonces
+		lanzar error "El vértice con nombre " + nombre + " ya existe"
+	fin si
+	vertice := nuevo Vertice
+	vertice.x = x
+	vertice.y = y
+	vertice.nombre = nombre
+	vertices.add(vertice)
+	retorne vertice
+fin funcion
+
+# Función que devuelve un vértice buscándolo por su nombre
+funcion obtenerVertice(nombre:string):Vertice
+	respuesta:Vertice = nulo
+	desde i := 0 hasta vertices.length hacer
+		si vertices[i].nombre == nombre entonces
+			respuesta = vertices[i]
+			finalizar ciclo
+		fin si
+	fin desde
+	retorne respuesta
+fin funcion
+
+# Funcion que crea una arista
+funcion crearArista(nombreVertice1:string, nombreVertice2:string):Arista
+	vertice1 = obtenerVertice(nombreVertice1)
+	vertice2 = obtenerVertice(nombreVertice2)
+	arista := nueva Arista
+	arista.vertice1 = nombreVertice1
+	arista.vertice2 = nombreVertice2
+	# La distancia de la arista se calcula con las coordenadas de los vértices
+	arista.distancia = raiz_cuadrada(potencia(vertice2.x - vertice1.x, 2) + potencia(vertice2.y - vertice1.y, 2))
+	aristas.add(arista)
+	retorne arista
+fin funcion
+
+# Función que eimina una arista
+funcion eliminarArista(nombreVertice1:string, nombreVertice2:string)
+	posicion:integer = -1
+	desde i := 0 hasta aristas.length hacer
+		si (aristas[i].vertice1 == nombreVertice1 y aristas[i].vertice2 == nombreVertice2)
+			o (aristas[i].vertice1 == nombreVertice2 y aristas[i].vertice2 == nombreVertice1) entonces
+			posicion = i
+			finalizar ciclo
+		fin si
+	fin desde
+	si posicion >= 0 entonces
+		aristas.remove(posicion)
+	fin si
+fin funcion
+
+# Función que elimina un vértice y sus aristas
+funcion eliminarVertice(nombreVertice:string)
+	posicion:integer = -1
+	desde i := 0 hasta vertices.length hacer
+		si vertices[i].nombre == nombreVertice entonces
+			posicion = i
+			finalizar ciclo
+		fin si
+	fin desde
+	si posicion >= 0 entonces
+		vertices.remove(posicion)
+		contador:integer = 0
+		# Ciclo que busca las aristas con el vértice eliminado, y elimina la arista
+		# hasta que ya no quede ninguna con ese vértice y deje de cumplir la condición
+		mientras contador < aristas.length hacer
+			arista := aristas[i]
+			si arista.vertice1 == nombreVertice o arista.vertice2 == nombreVertice entonces
+				aristas.remover(contador)
+				contador = 0
+			si no entonces
+				contador = contador + 1
+			fin si
+		fin mientras
+	fin si
+fin funcion
+
+# Función que encuentra la ruta mínima entre dos vértices del grafo y devuelve
+# una instancia de RutaMinima con los vértices de la ruta y su distancia total
+funcion calcularRutaMinima(nombreVertice1:string, nombreVertice2:string):RutaMinima
+	matriz := nueva lista de NodoRutaMinima
+	nodoActual:NodoRutaMinima
+	nodoFinal:NodoRutaMinima
+	desde i := 0 hasta vertice.length hacer
+		nodo := nuevo NodoRutaMinima
+		nodo.vertice = vertice[i].nombre
+		nodo.precedente = nulo
+		si vertice[i].nombre == nombreVertice1 entonces
+			nodo.distancia = 0
+			nodo.definitivo = verdadero
+			nodoActual = nodo
+		si no entonces
+			nodo.distancia = maximo_integer
+			nodo.definitivo = falso
+		fin si
+		si nodo.vertice == nombreVertice2 entonces
+			nodoFinal = nodo
+		fin si
+	fin desde
+	nodosDefinitivos:integer = 1
+	mientras nodosDefinitivos < matriz.length y nodoActual.vertice <> nombreVertice2 hacer
+		desde i := 0 hasta aristas.length hacer
+			distanciaActual := aristas[i].distancia + nodoActual.distancia
+			verticeNodoSiguiente:string = nulo
+			si aristas[i].vertice1 == nodoActual.vertice entonces
+				verticeNodoSiguiente = aristas[i].vertice2
+			si aristas[i].vertice2 == nodoActual.vertice entonces
+				verticeNodoSiguiente = aristas[i].vertice1
+			fin si
+			si verticeNodoSiguiente no es nulo entonces
+				nodoSiguiente:NodoRutaMinima = nulo
+				desde i := 0 hasta matriz.length hacer
+					si matriz[i].vertice == verticeNodoSiguiente entonces
+						nodoSiguiente = matriz[i]
+						finalizar ciclo
+					fin si
+				fin desde
+				si nodoSiguiente no es nulo y nodoSiguiente.definitivo = falso 
+					y nodoSiguiente.distancia > distanciaActual entonces
+					nodoSiguiente.distancia = distanciaActual
+					nodoSiguiente.precedente = nodoActual
+				fin si
+			fin si
+		fin desde
+		nodoMinimo:NodoRutaMinima = nulo
+		desde i := 0 hasta matriz.length hacer
+			nodo := matriz[i]
+			si nodo.definitivo == verdadero o nodo.distancia < 0 entones
+				continuar ciclo
+			si nodoMinimo es nulo o nodoMinimo.distancia > nodo.distancia entonces
+				nodoMinimo = nodo
+			fin si
+		fin desde
+		si nodoMinimo es nulo entonces
+			lanzar error "No se encontró una ruta mínima entre los vértices"
+		fin si
+		nodoMinimo.definitivo = verdadero
+		nodoActual = nodoMinimo
+		nodosDefinitivos = nodosDefinitivos + 1
+	fin mientras
+	si nodoFinal.definitivo == verdadero entonces
+		resultado := nueva RutaMinima
+		resultado.distancia = nodoFinal.distancia
+		nodoPrecedente := nodoFinal
+		vertices := nueva lista de string
+		mientras nodoPrecedente no es nulo hacer
+			vertices.add(nodoPrecedente.vertice)
+			nodoPrecedente = nodoPrecedente.precedente
+		fin mientras
+		vertices.reverse()
+		resultado.vertices = vertices
+		retorne resultado
+	si no entonces
+		lanzar error "No se encontró una ruta mínima entre los vértices"
+	fin si
+fin funcion
