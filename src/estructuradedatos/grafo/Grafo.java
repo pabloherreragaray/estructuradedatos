@@ -3,23 +3,48 @@ package estructuradedatos.grafo;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Clase que representa un grafo
+ * 
+ * @author Pablo Herrera
+ *
+ */
 public class Grafo {
 	private List<Vertice> vertices;
 	private List<Arista> aristas;
 
+	/**
+	 * Constructor
+	 */
 	public Grafo() {
 		vertices = new ArrayList<Vertice>();
 		aristas = new ArrayList<Arista>();
 	}
 
+	/**
+	 * Devuelve la lista de vértices
+	 * 
+	 * @return Lista de vértices del grafo
+	 */
 	public List<Vertice> getVertices() {
 		return vertices;
 	}
 
+	/**
+	 * Devuelve la lista de aristas
+	 * 
+	 * @return Lista de aristas del vértice
+	 */
 	public List<Arista> getAristas() {
 		return aristas;
 	}
 
+	/**
+	 * Obtiene un vértice a partir de su nombre
+	 * 
+	 * @param nombre Nombre del vértice
+	 * @return Vértice encontrado o null si no se encontró un vértice
+	 */
 	public Vertice getVertice(String nombre) {
 		Vertice res = null;
 		for (Vertice v : vertices) {
@@ -31,6 +56,14 @@ public class Grafo {
 		return res;
 	}
 
+	/**
+	 * Adiciona un vértice existente al grafo
+	 * 
+	 * @param v Vértice
+	 * @return Vértice añadido
+	 * @throws Exception Lanzará error si el vértice es null o si el nombre del
+	 *                   vértice ya existe
+	 */
 	public Vertice adicionarVertice(Vertice v) throws Exception {
 		if (v == null)
 			throw new Exception("El vértice es nulo");
@@ -40,14 +73,42 @@ public class Grafo {
 		return v;
 	}
 
+	/**
+	 * Adiciona un vértice pasando el nombre y las coordenadas
+	 * 
+	 * @param nombre Nombre
+	 * @param x      X
+	 * @param y      Y
+	 * @return Vértice añadido
+	 * @throws Exception Lanzará error si el nombre del vértice ya existe
+	 */
 	public Vertice adicionarVertice(String nombre, double x, double y) throws Exception {
 		return adicionarVertice(new Vertice(nombre, x, y));
 	}
 
-	public Vertice adicionarVertice(double x, double y) throws Exception {
-		return adicionarVertice(new Vertice(x, y));
+	/**
+	 * Adiciona un vértice pasando solamente sus coordenadas (el nombre se creará
+	 * automáticamente)
+	 * 
+	 * @param x X
+	 * @param y Y
+	 * @return Vértice añadido
+	 */
+	public Vertice adicionarVertice(double x, double y) {
+		try {
+			return adicionarVertice(new Vertice(x, y));
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
+	/**
+	 * Obtiene un vértice buscándolo por los nombres de sus vértices extremos
+	 * 
+	 * @param v1 Nombre del vértice 1
+	 * @param v2 Nombre del vértice 2
+	 * @return Arista encontrada o null si no se encontró ninguna arista
+	 */
 	public Arista getArista(String v1, String v2) {
 		Arista res = null;
 		for (Arista a : aristas) {
@@ -59,6 +120,15 @@ public class Grafo {
 		return res;
 	}
 
+	/**
+	 * Adiciona una arista pasando los vértices extremos
+	 * 
+	 * @param v1 Vértice 1
+	 * @param v2 Vértice 2
+	 * @return Arista añadida
+	 * @throws Exception Lanzará error si uno de los vértices es null o si ya existe
+	 *                   una arista con esos extremos
+	 */
 	public Arista adicionarArista(Vertice v1, Vertice v2) throws Exception {
 		if (v1 == null || v2 == null)
 			throw new Exception("Uno o ambos vértices son nulos");
@@ -70,10 +140,25 @@ public class Grafo {
 		return a;
 	}
 
+	/**
+	 * Adiciona una arista pasando los nombres de los vértices extremos
+	 * 
+	 * @param v1 Nombre del vértice 1
+	 * @param v2 Nombre del vértice 2
+	 * @return Arista añadida
+	 * @throws Exception Lanza un error si uno de los vértices no existe o si ya
+	 *                   existe una arista con esos vértices
+	 */
 	public Arista adicionarArista(String v1, String v2) throws Exception {
 		return adicionarArista(getVertice(v1), getVertice(v2));
 	}
 
+	/**
+	 * Elimina una arista buscándola por los nombres de los vértices extremos
+	 * 
+	 * @param v1 Nombre del vértice 1
+	 * @param v2 NOmbre del vértice 2
+	 */
 	public void eliminarArista(String v1, String v2) {
 		int pos = -1;
 		for (int i = 0; i < aristas.size(); i++) {
@@ -88,10 +173,20 @@ public class Grafo {
 		}
 	}
 
+	/**
+	 * Elimina una arista
+	 * 
+	 * @param a Arista
+	 */
 	public void eliminarArista(Arista a) {
 		eliminarArista(a.getVertice1().getNombre(), a.getVertice2().getNombre());
 	}
 
+	/**
+	 * Elimina todas las aristas que contienen un determinado vértice
+	 * 
+	 * @param v Nombre del vértice
+	 */
 	public void eliminarAristaConVertice(String v) {
 		int i = 0;
 		int total = aristas.size();
@@ -106,7 +201,12 @@ public class Grafo {
 		}
 	}
 
-	public void elimiarVertice(String nombre) {
+	/**
+	 * Elimina un vértice buscándolo por su nombre
+	 * 
+	 * @param nombre Nombre del vértice
+	 */
+	public void eliminarVertice(String nombre) {
 		int pos = -1;
 		for (int i = 0; i < vertices.size(); i++) {
 			Vertice v = vertices.get(i);
@@ -122,22 +222,51 @@ public class Grafo {
 	}
 
 	@Override
+	/**
+	 * Devuelve información del grafo
+	 */
 	public String toString() {
 		return "Grafo";
 	}
 
+	/**
+	 * Devuelve una instancia de RutaMinimaGrafo con la ruta mínima calculada entre
+	 * dos vértices
+	 * 
+	 * @param v1 Nombre del vértice 1
+	 * @param v2 Nombre del vértice 2
+	 * @return Instancia de RutaMinimaGrafo
+	 * @throws Exception Lanza un error si ocurre un error en el cálculo de la ruta
+	 *                   mínima
+	 */
 	public RutaMinimaGrafo getRutaMinima(String v1, String v2) throws Exception {
-		if (v1 == null || v2 == null)
-			throw new Exception("Uno o ambos vértices son nulos");
 		RutaMinimaGrafo res = new RutaMinimaGrafo(this, v1, v2);
 		res.calcular();
 		return res;
 	}
 
+	/**
+	 * Devuelve una instancia de RutaMinimaGrafo con la ruta mínima calculada entre
+	 * dos vértices
+	 * 
+	 * @param v1 Vértice 1
+	 * @param v2 Vértice 2
+	 * @return Instancia de RutaMinimaGrafo
+	 * @throws Exception Exception Lanza un error si ocurre un error en el cálculo
+	 *                   de la ruta mínima o si uno o ambos vértices son nulos
+	 */
 	public RutaMinimaGrafo getRutaMinima(Vertice v1, Vertice v2) throws Exception {
+		if (v1 == null || v2 == null)
+			throw new Exception("Uno o ambos vértices son nulos");
 		return getRutaMinima(v1.getNombre(), v2.getNombre());
 	}
 
+	/**
+	 * Devuelve las aristas que contienen un vértice
+	 * 
+	 * @param v Nombre del vértice
+	 * @return Lista de aristas encontradas
+	 */
 	public List<Arista> getAristasConVertice(String v) {
 		List<Arista> res = new ArrayList<Arista>();
 		for (Arista a : aristas) {

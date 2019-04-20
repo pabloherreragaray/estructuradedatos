@@ -3,6 +3,12 @@ package estructuradedatos.grafo;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Clase que calcula y devuelve una ruta mínima
+ * 
+ * @author Pablo Herrera
+ *
+ */
 public class RutaMinimaGrafo {
 	private Grafo grafo;
 	private String verticeInicial;
@@ -13,32 +19,70 @@ public class RutaMinimaGrafo {
 	private NodoRutaMinimaGrafo nodoInicial;
 	private NodoRutaMinimaGrafo nodoFinal;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param g        Grafo
+	 * @param vInicial Nombre del vértice inicial
+	 * @param vFinal   Nombre del vértice final
+	 */
 	public RutaMinimaGrafo(Grafo g, String vInicial, String vFinal) {
 		grafo = g;
 		verticeInicial = vInicial;
 		verticeFinal = vFinal;
 	}
 
+	/**
+	 * Devuelve el grafo
+	 * 
+	 * @return Grafo
+	 */
 	public Grafo getGrafo() {
 		return grafo;
 	}
 
+	/**
+	 * Devuelve el vértice inicial
+	 * 
+	 * @return Nombre del vértice inicial
+	 */
 	public String getVerticeInicial() {
 		return verticeInicial;
 	}
 
+	/**
+	 * Devuelve el vértice final
+	 * 
+	 * @return Nombre del vértice final
+	 */
 	public String getVerticeFinal() {
 		return verticeFinal;
 	}
 
+	/**
+	 * Devuelve los vértices de la ruta mínima
+	 * 
+	 * @return Lista de nombres de los vértices de la ruta mínima
+	 */
 	public List<String> getVertices() {
 		return vertices;
 	}
 
+	/**
+	 * Devuelve la distancia de la ruta mínima
+	 * 
+	 * @return Distancia de la ruta mínima
+	 */
 	public double getDistancia() {
 		return distancia;
 	}
 
+	/**
+	 * Calcula la ruta mínima
+	 * 
+	 * @throws Exception Lnza error si no se encontró los vértices inicial o final, o
+	 *                   si no hay una ruta entre los dos vértices
+	 */
 	public void calcular() throws Exception {
 		matrizNodos = new ArrayList<NodoRutaMinimaGrafo>();
 		for (Vertice v : getGrafo().getVertices()) {
