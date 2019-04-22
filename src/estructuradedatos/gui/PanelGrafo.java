@@ -12,11 +12,11 @@ import javax.swing.JPanel;
 
 import estructuradedatos.grafo.Vertice;
 
-public class PanelGrafo extends JPanel implements MouseListener {
+public class PanelGrafo extends JPanel implements MouseListener, GrafoGraficador {
 	public static final int anchoMinimo = 500;
 	public static final int altoMinimo = 500;
-	public static final int anchoPorDefecto = 1600;
-	public static final int altoPorDefecto = 900;
+	public static final int anchoPorDefecto = 1200;
+	public static final int altoPorDefecto = 650;
 	public static final Color colorFondo = Color.WHITE;
 	public static final Color colorVertice = Color.RED;
 	public static final int radioVertice = 8;
@@ -31,12 +31,14 @@ public class PanelGrafo extends JPanel implements MouseListener {
 	public PanelGrafo(MainFrame mf) {
 		super();
 		mainFrame = mf;
+		getGrafoManager().setGraficador(this);
 		crearUI();
 	}
 
 	private void crearUI() {
-		setPreferredSize(new Dimension(anchoPorDefecto, altoPorDefecto));
 		setMinimumSize(new Dimension(anchoMinimo, altoMinimo));
+		getGrafoManager().setAnchoGrafo(anchoPorDefecto);
+		getGrafoManager().setAltoGrafo(altoPorDefecto);
 		addMouseListener(this);
 	}
 
@@ -85,6 +87,18 @@ public class PanelGrafo extends JPanel implements MouseListener {
 	public void mouseReleased(MouseEvent e) {
 		getGrafoManager().clicEn(e.getX(), e.getY());
 		repaint();
+	}
+
+	@Override
+	public void setDimension(int ancho, int alto) {
+		setPreferredSize(new Dimension(ancho, alto));
+		actualizar();
+	}
+
+	@Override
+	public void actualizar() {
+		repaint();
+		revalidate();
 	}
 
 }

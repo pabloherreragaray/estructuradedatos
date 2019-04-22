@@ -1,7 +1,6 @@
 package estructuradedatos.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -10,13 +9,18 @@ import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class PanelControles extends JPanel implements ActionListener, ChangeListener, GrafoInterfaz {
 
@@ -33,6 +37,13 @@ public class PanelControles extends JPanel implements ActionListener, ChangeList
 	private JCheckBox chEliminarSinPreguntar;
 	private JSpinner txAnchoPanel;
 	private JSpinner txAltoPanel;
+	private JMenuItem miGuardar;
+	private JMenuItem miGuardarComo;
+	private JMenuItem miAbrir;
+	private JMenuItem miCerrar;
+	private JMenuItem miNuevo;
+
+	private String archivoActual;
 
 	public PanelControles(MainFrame mf) {
 		super();
@@ -127,6 +138,23 @@ public class PanelControles extends JPanel implements ActionListener, ChangeList
 		gc.fill = GridBagConstraints.HORIZONTAL;
 		pnDimension.add(txAltoPanel, gc);
 
+		// Se crean los menús
+		JMenuBar menuBar = new JMenuBar();
+		JMenu menuArchivo = new JMenu("Archivo");
+		menuBar.add(menuArchivo);
+		miGuardar = new JMenuItem("Guardar");
+		miGuardarComo = new JMenuItem("Guardar como");
+		miAbrir = new JMenuItem("Abrir");
+		miNuevo = new JMenuItem("Nuevo");
+		miCerrar = new JMenuItem("Cerrar");
+		menuArchivo.add(miNuevo);
+		menuArchivo.add(miAbrir);
+		menuArchivo.add(miGuardar);
+		menuArchivo.add(miGuardarComo);
+		menuArchivo.addSeparator();
+		menuArchivo.add(miCerrar);
+		mainFrame.setJMenuBar(menuBar);
+
 		// Adición de listeners para los botones
 		btAdicionarAristas.addActionListener(this);
 		btAdicionarVertices.addActionListener(this);
@@ -134,6 +162,11 @@ public class PanelControles extends JPanel implements ActionListener, ChangeList
 		btCancelar.addActionListener(this);
 		txAnchoPanel.addChangeListener(this);
 		txAltoPanel.addChangeListener(this);
+		miGuardar.addActionListener(this);
+		miGuardarComo.addActionListener(this);
+		miAbrir.addActionListener(this);
+		miNuevo.addActionListener(this);
+		miCerrar.addActionListener(this);
 	}
 
 	private GrafoManager getGrafoManager() {
@@ -179,9 +212,62 @@ public class PanelControles extends JPanel implements ActionListener, ChangeList
 	private void accionCambiaDimensionPanel() {
 		int ancho = ((Integer) txAnchoPanel.getValue()).intValue();
 		int alto = ((Integer) txAltoPanel.getValue()).intValue();
-		mainFrame.getPanelGrafo().setPreferredSize(new Dimension(ancho, alto));
-		mainFrame.getPanelGrafo().repaint();
-		mainFrame.getPanelGrafo().revalidate();
+		getGrafoManager().setAnchoGrafo(ancho);
+		getGrafoManager().setAltoGrafo(alto);
+	}
+
+	private void accionGuardar(boolean como) {
+		if (como || archivoActual == null || archivoActual.length() == 0) {
+			JFileChooser fc = new JFileChooser();
+			fc.setDialogTitle("Guardar grafo como");
+			FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos Xml", "xml");
+			fc.addChoosableFileFilter(filter);
+			fc.setFileFilter(filter);
+			int option = fc.showSaveDialog(mainFrame);
+			if (option == JFileChooser.APPROVE_OPTION) {
+				archivoActual = fc.getSelectedFile().getAbsolutePath();
+				if (!archivoActual.toLowerCase().endsWith(".xml"))
+					archivoActual = archivoActual + ".xml";
+			}
+		}
+		if (archivoActual == null || archivoActual.length() == 0)
+			return;
+		try {
+			getGrafoManager().guardarGrafoXmlComo(archivoActual);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(mainFrame, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
+	private void accionAbrir() {
+		JFileChooser fc = new JFileChooser();
+		fc.setDialogTitle("Abrir grafo desde archivo");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos Xml", "xml");
+		fc.addChoosableFileFilter(filter);
+		fc.setFileFilter(filter);
+		int option = fc.showOpenDialog(mainFrame);
+		if (option == JFileChooser.APPROVE_OPTION) {
+			archivoActual = fc.getSelectedFile().getAbsolutePath();
+			if (!archivoActual.toLowerCase().endsWith(".xml"))
+				archivoActual = archivoActual + ".xml";
+		}
+		if (archivoActual == null || archivoActual.length() == 0)
+			return;
+		try {
+			getGrafoManager().abrirGrafoDesdeXml(archivoActual);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(mainFrame, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
+	private void accionNuevo() {
+		archivoActual = null;
+		getGrafoManager().nuevoGrafo();
+	}
+
+	private void accionCerrar() {
+		mainFrame.setVisible(false);
+		mainFrame.dispose();
 	}
 
 	@Override
@@ -194,6 +280,16 @@ public class PanelControles extends JPanel implements ActionListener, ChangeList
 			accionEliminacion();
 		else if (e.getSource() == btCancelar)
 			accionCancelar();
+		else if (e.getSource() == miGuardar)
+			accionGuardar(false);
+		else if (e.getSource() == miGuardarComo)
+			accionGuardar(true);
+		else if (e.getSource() == miAbrir)
+			accionAbrir();
+		else if (e.getSource() == miNuevo)
+			accionNuevo();
+		else if (e.getSource() == miCerrar)
+			accionCerrar();
 	}
 
 	@Override
