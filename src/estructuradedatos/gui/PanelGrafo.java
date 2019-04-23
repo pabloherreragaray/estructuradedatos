@@ -10,17 +10,22 @@ import java.awt.event.MouseListener;
 
 import javax.swing.JPanel;
 
+import estructuradedatos.grafo.Arista;
 import estructuradedatos.grafo.Vertice;
 
 public class PanelGrafo extends JPanel implements MouseListener, GrafoGraficador {
-	public static final int anchoMinimo = 500;
-	public static final int altoMinimo = 500;
-	public static final int anchoPorDefecto = 1200;
-	public static final int altoPorDefecto = 650;
-	public static final Color colorFondo = Color.WHITE;
-	public static final Color colorVertice = Color.RED;
-	public static final int radioVertice = 8;
-	public static final Color colorTextoVertice = Color.BLACK;
+	public static final int ANCHO_MINIMO = 500;
+	public static final int ALTO_MINIMO = 500;
+	public static final int ANCHO_POR_DEFECTO = 1200;
+	public static final int ALTO_POR_DEFECTO = 650;
+	public static final Color COLOR_FONDO = Color.WHITE;
+	public static final Color COLOR_VERTICE = Color.RED;
+	public static final Color COLOR_VERTICE_SELECCIONADO = Color.BLUE;
+	public static final Color COLOR_BORDE_VERTICE = Color.BLACK;
+	public static final Color COLOR_LINEA_ARISTA = Color.BLACK;
+	public static final Color COLOR_LINEA_ARISTA_SELECCIONADA = Color.BLUE;
+	public static final int RADIO_VERTICE = 8;
+	public static final Color COLOR_TEXTO_VERTICE = Color.BLACK;
 
 	/**
 	 * 
@@ -32,13 +37,14 @@ public class PanelGrafo extends JPanel implements MouseListener, GrafoGraficador
 		super();
 		mainFrame = mf;
 		getGrafoManager().setGraficador(this);
+		GrafoManager.hitboxVertice = RADIO_VERTICE + 4;
 		crearUI();
 	}
 
 	private void crearUI() {
-		setMinimumSize(new Dimension(anchoMinimo, altoMinimo));
-		getGrafoManager().setAnchoGrafo(anchoPorDefecto);
-		getGrafoManager().setAltoGrafo(altoPorDefecto);
+		setMinimumSize(new Dimension(ANCHO_MINIMO, ALTO_MINIMO));
+		getGrafoManager().setAnchoGrafo(ANCHO_POR_DEFECTO);
+		getGrafoManager().setAltoGrafo(ALTO_POR_DEFECTO);
 		addMouseListener(this);
 	}
 
@@ -47,19 +53,32 @@ public class PanelGrafo extends JPanel implements MouseListener, GrafoGraficador
 		super.paint(gr);
 		Graphics2D g = (Graphics2D) gr;
 		// Relleno de la pantalla
-		g.setPaint(colorFondo);
+		g.setPaint(COLOR_FONDO);
 		int ancho = (int) getPreferredSize().getWidth();
 		int alto = (int) getPreferredSize().getHeight();
 		g.fillRect(0, 0, ancho, alto);
+		for (Arista a : getGrafoManager().getGrafo().getAristas()) {
+			Vertice v1 = a.getVertice1();
+			Vertice v2 = a.getVertice2();
+			if (v1.getX() > ancho || v1.getY() > alto || v2.getX() > ancho || v2.getY() > alto)
+				continue;
+			boolean seleccionada = getGrafoManager().aristaEstaSeleccionada(a);
+			g.setPaint(seleccionada ? COLOR_LINEA_ARISTA_SELECCIONADA : COLOR_LINEA_ARISTA);
+			g.drawLine((int) v1.getX(), (int) v1.getY(), (int) v2.getX(), (int) v2.getY());
+		}
 		for (Vertice v : getGrafoManager().getGrafo().getVertices()) {
 			if (v.getX() > ancho || v.getY() > alto)
 				continue;
-			g.setPaint(colorVertice);
-			g.fillOval((int) (v.getX() - radioVertice), (int) (v.getY() - radioVertice), radioVertice * 2,
-					radioVertice * 2);
+			boolean seleccionado = getGrafoManager().verticeEstaSeleccionado(v);
+			g.setPaint(seleccionado ? COLOR_VERTICE_SELECCIONADO : COLOR_VERTICE);
+			g.fillOval((int) (v.getX() - RADIO_VERTICE), (int) (v.getY() - RADIO_VERTICE), RADIO_VERTICE * 2,
+					RADIO_VERTICE * 2);
+			g.setPaint(COLOR_BORDE_VERTICE);
+			g.drawOval((int) (v.getX() - RADIO_VERTICE), (int) (v.getY() - RADIO_VERTICE), RADIO_VERTICE * 2,
+					RADIO_VERTICE * 2);
 			g.setFont(new Font("Arial", Font.BOLD, 12));
-			g.setPaint(colorTextoVertice);
-			g.drawString(v.getNombre(), (int) (v.getX()), (int) (v.getY() + radioVertice * 2 + 5));
+			g.setPaint(COLOR_TEXTO_VERTICE);
+			g.drawString(v.getNombre(), (int) (v.getX()), (int) (v.getY() + RADIO_VERTICE * 2 + 5));
 		}
 	}
 
@@ -86,7 +105,6 @@ public class PanelGrafo extends JPanel implements MouseListener, GrafoGraficador
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		getGrafoManager().clicEn(e.getX(), e.getY());
-		repaint();
 	}
 
 	@Override

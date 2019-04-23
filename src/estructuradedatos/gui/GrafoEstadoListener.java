@@ -1,7 +1,7 @@
 package estructuradedatos.gui;
 
-public interface GrafoListener {
-	
+public interface GrafoEstadoListener {
+
 	void cambiaEstado(int estadoAnterior, int estadoActual);
 
 }

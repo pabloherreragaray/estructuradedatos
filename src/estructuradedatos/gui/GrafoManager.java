@@ -24,12 +24,15 @@ public class GrafoManager {
 	public static final int ADICION_VERTICES = 1;
 	public static final int ELIMINACION = 3;
 	public static final int RUTA_MINIMA = 4;
+	public static int hitboxVertice = 10;
+	public static int hitboxArista = 10;
 
 	private Grafo grafo;
 	private int estado = 0;
-	private Vertice vertice1;
-	private Vertice vertice2;
-	private List<GrafoListener> listeners;
+	private Vertice verticeSeleccionado1;
+	private Vertice verticeSeleccionado2;
+	private Arista aristaSeleccionada;
+	private List<GrafoEstadoListener> listeners;
 	private GrafoInterfaz interfaz;
 	private GrafoGraficador graficador;
 	private int anchoGrafo;
@@ -37,13 +40,14 @@ public class GrafoManager {
 
 	public GrafoManager() {
 		grafo = new Grafo();
-		listeners = new ArrayList<GrafoListener>();
+		listeners = new ArrayList<GrafoEstadoListener>();
+		setEstado(VISUALIZACION);
 	}
 
 	private void setEstado(int estado) {
 		int anterior = this.estado;
 		this.estado = estado;
-		for (GrafoListener listener : listeners) {
+		for (GrafoEstadoListener listener : listeners) {
 			listener.cambiaEstado(anterior, this.estado);
 		}
 	}
@@ -72,7 +76,7 @@ public class GrafoManager {
 		setEstado(VISUALIZACION);
 	}
 
-	public void adicionarListener(GrafoListener listener) {
+	public void adicionarListener(GrafoEstadoListener listener) {
 		listeners.add(listener);
 	}
 
@@ -100,7 +104,35 @@ public class GrafoManager {
 	public void clicEn(int x, int y) {
 		if (estado == ADICION_VERTICES) {
 			crearVerticeEnCoordenadas(x, y);
+		} else if (estado == ADICION_ARISTAS) {
+			seleccionar(x, y, true, false, false);
+			if (verticeSeleccionado1 != null && interfaz != null)
+				interfaz.verticeSeleccionado(verticeSeleccionado1);
+			else if (interfaz != null)
+				interfaz.seleccionaNada();
+			if (verticeSeleccionado1 != null && verticeSeleccionado2 != null) {
+				try {
+					grafo.adicionarArista(verticeSeleccionado1, verticeSeleccionado2);
+				} catch (Exception e) {
+				}
+				verticeSeleccionado1 = verticeSeleccionado2 = null;
+			}
+		} else if (estado == ELIMINACION) {
+		} else if (estado == RUTA_MINIMA) {
+		} else {
+			int tipo = seleccionar(x, y, true, true, true);
+			if (tipo == 1 && verticeSeleccionado1 != null && interfaz != null)
+				interfaz.verticeSeleccionado(verticeSeleccionado1);
+			else if (tipo == 2 && aristaSeleccionada != null && interfaz != null)
+				interfaz.aristaSeleccionada(aristaSeleccionada);
+			else if (interfaz != null) {
+				verticeSeleccionado1 = verticeSeleccionado2 = null;
+				aristaSeleccionada = null;
+				interfaz.seleccionaNada();
+			}
 		}
+		if (graficador != null)
+			graficador.actualizar();
 	}
 
 	public Grafo getGrafo() {
@@ -144,7 +176,7 @@ public class GrafoManager {
 			ev.setAttribute("nombre", a.getVertice1().getNombre());
 			e.appendChild(ev);
 			ev = doc.createElement("vertice");
-			ev.setAttribute("vertice", a.getVertice2().getNombre());
+			ev.setAttribute("nombre", a.getVertice2().getNombre());
 			e.appendChild(ev);
 			root.appendChild(e);
 		}
@@ -332,6 +364,77 @@ public class GrafoManager {
 
 	public void setGraficador(GrafoGraficador graficador) {
 		this.graficador = graficador;
+	}
+
+	public int seleccionar(int x, int y, boolean vertices, boolean aristas, boolean soloUnVertice) {
+		int tipo = 0;
+		if (vertices) {
+			Vertice v = getVerticeEnCoordenadas(x, y);
+			if (v != null) {
+				if (soloUnVertice)
+					verticeSeleccionado1 = v;
+				else {
+					if (verticeSeleccionado1 == null) {
+						verticeSeleccionado1 = v;
+					} else {
+						verticeSeleccionado2 = v;
+					}
+				}
+				tipo = 1;
+			}
+		}
+		if (aristas) {
+			Arista a = getAristaEnCoordenadas(x, y);
+			if (a != null) {
+				aristaSeleccionada = a;
+				tipo = 2;
+			}
+		}
+		return tipo;
+	}
+
+	private Vertice getVerticeEnCoordenadas(int x, int y) {
+		Vertice sel = null;
+		List<Vertice> vertices = grafo.getVertices();
+		for (Vertice v : vertices) {
+			if (puntoColisionaVertice(x, y, v)) {
+				sel = v;
+				break;
+			}
+		}
+		return sel;
+	}
+
+	private Arista getAristaEnCoordenadas(int x, int y) {
+		Arista sel = null;
+		List<Arista> aristas = grafo.getAristas();
+		for (Arista a : aristas) {
+			if (puntoColisionaArista(x, y, a)) {
+				sel = a;
+				break;
+			}
+		}
+		return sel;
+	}
+
+	private static double distanciaEntrePuntos(double x1, double y1, double x2, double y2) {
+		return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+	}
+
+	public static boolean puntoColisionaVertice(int x, int y, Vertice v) {
+		return distanciaEntrePuntos(x, y, v.getX(), v.getY()) <= hitboxVertice;
+	}
+
+	public static boolean puntoColisionaArista(int x, int y, Arista a) {
+		return false;
+	}
+
+	public boolean aristaEstaSeleccionada(Arista a) {
+		return a == aristaSeleccionada;
+	}
+
+	public boolean verticeEstaSeleccionado(Vertice v) {
+		return v == verticeSeleccionado1 || v == verticeSeleccionado2;
 	}
 
 }

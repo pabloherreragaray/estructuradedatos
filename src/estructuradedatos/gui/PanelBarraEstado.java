@@ -8,7 +8,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class PanelBarraEstado extends JPanel implements GrafoListener {
+public class PanelBarraEstado extends JPanel implements GrafoEstadoListener {
 	public static final String MENSAJE_ADICION_VERTICES = "Haga clic dentro del panel para adicionar "
 			+ "nuevos vértices al grafo";
 	public static final String MENSAJE_ADICION_ARISTAS = "Haga clic sobre un vértice para seleccionarlo, "

@@ -17,12 +17,17 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
+import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class PanelControles extends JPanel implements ActionListener, ChangeListener, GrafoInterfaz {
+import estructuradedatos.grafo.Arista;
+import estructuradedatos.grafo.Vertice;
+
+public class PanelControles extends JPanel
+		implements ActionListener, ChangeListener, GrafoInterfaz, GrafoEstadoListener {
 
 	/**
 	 * 
@@ -37,6 +42,8 @@ public class PanelControles extends JPanel implements ActionListener, ChangeList
 	private JCheckBox chEliminarSinPreguntar;
 	private JSpinner txAnchoPanel;
 	private JSpinner txAltoPanel;
+	private JTextArea txInfoSeleccion;
+	private JPanel pnInfo;
 	private JMenuItem miGuardar;
 	private JMenuItem miGuardarComo;
 	private JMenuItem miAbrir;
@@ -49,7 +56,9 @@ public class PanelControles extends JPanel implements ActionListener, ChangeList
 		super();
 		mainFrame = mf;
 		getGrafoManager().setInterfaz(this);
+		getGrafoManager().adicionarListener(this);
 		crearUI();
+		cambiaEstado(0, getGrafoManager().getEstado());
 	}
 
 	private void crearUI() {
@@ -67,21 +76,24 @@ public class PanelControles extends JPanel implements ActionListener, ChangeList
 		btAdicionarAristas = new JButton("Adicionar aristas");
 		btEliminar = new JButton("Eliminar");
 		btCancelar = new JButton("Cancelar");
-		btCancelar.setVisible(false);
 		chAutonombrar = new JCheckBox("Autonombrar vértices");
 		chAutonombrar.setSelected(true);
-		chAutonombrar.setVisible(false);
 		chEliminarSinPreguntar = new JCheckBox("Eliminar sin preguntar");
-		chEliminarSinPreguntar.setVisible(false);
-		SpinnerNumberModel modeloAncho = new SpinnerNumberModel(PanelGrafo.anchoPorDefecto, PanelGrafo.anchoMinimo,
-				PanelGrafo.anchoMinimo * 10, 50);
+		SpinnerNumberModel modeloAncho = new SpinnerNumberModel(PanelGrafo.ANCHO_POR_DEFECTO, PanelGrafo.ANCHO_MINIMO,
+				PanelGrafo.ANCHO_MINIMO * 10, 50);
 		txAnchoPanel = new JSpinner(modeloAncho);
-		SpinnerNumberModel modeloAlto = new SpinnerNumberModel(PanelGrafo.altoPorDefecto, PanelGrafo.altoMinimo,
-				PanelGrafo.altoMinimo * 10, 50);
+		SpinnerNumberModel modeloAlto = new SpinnerNumberModel(PanelGrafo.ALTO_POR_DEFECTO, PanelGrafo.ALTO_MINIMO,
+				PanelGrafo.ALTO_MINIMO * 10, 50);
 		txAltoPanel = new JSpinner(modeloAlto);
 		JPanel pnDimension = new JPanel();
 		pnDimension.setLayout(new GridBagLayout());
 		pnDimension.setBorder(BorderFactory.createTitledBorder("Tamaño del grafo"));
+		txInfoSeleccion = new JTextArea();
+		txInfoSeleccion.setRows(5);
+		pnInfo = new JPanel();
+		pnInfo.setLayout(new BorderLayout());
+		pnInfo.setBorder(BorderFactory.createTitledBorder("Ítem seleccionado"));
+		pnInfo.setVisible(false);
 
 		// Se adicionan al panel
 		gc = new GridBagConstraints();
@@ -137,6 +149,12 @@ public class PanelControles extends JPanel implements ActionListener, ChangeList
 		gc.gridy = 1;
 		gc.fill = GridBagConstraints.HORIZONTAL;
 		pnDimension.add(txAltoPanel, gc);
+		gc = new GridBagConstraints();
+		gc.gridx = 0;
+		gc.gridy = 7;
+		gc.fill = GridBagConstraints.HORIZONTAL;
+		panelSuperior.add(pnInfo, gc);
+		pnInfo.add(txInfoSeleccion, BorderLayout.CENTER);
 
 		// Se crean los menús
 		JMenuBar menuBar = new JMenuBar();
@@ -175,38 +193,18 @@ public class PanelControles extends JPanel implements ActionListener, ChangeList
 
 	private void accionAdicionarAristas() {
 		getGrafoManager().setEstadoAdicionAristas();
-		btAdicionarAristas.setEnabled(false);
-		btAdicionarVertices.setEnabled(false);
-		btEliminar.setEnabled(false);
-		btCancelar.setVisible(true);
 	}
 
 	private void accionAdicionarVertices() {
 		getGrafoManager().setEstadoAdicionVertices();
-		btAdicionarAristas.setEnabled(false);
-		btAdicionarVertices.setEnabled(false);
-		btEliminar.setEnabled(false);
-		btCancelar.setVisible(true);
-		chAutonombrar.setVisible(true);
 	}
 
 	private void accionEliminacion() {
 		getGrafoManager().setEstadoEliminacion();
-		btAdicionarAristas.setEnabled(false);
-		btAdicionarVertices.setEnabled(false);
-		btEliminar.setEnabled(false);
-		btCancelar.setVisible(true);
-		chEliminarSinPreguntar.setVisible(true);
 	}
 
 	private void accionCancelar() {
 		getGrafoManager().setEstadoNormal();
-		btAdicionarAristas.setEnabled(true);
-		btAdicionarVertices.setEnabled(true);
-		btEliminar.setEnabled(true);
-		btCancelar.setVisible(false);
-		chAutonombrar.setVisible(false);
-		chEliminarSinPreguntar.setVisible(false);
 	}
 
 	private void accionCambiaDimensionPanel() {
@@ -310,6 +308,33 @@ public class PanelControles extends JPanel implements ActionListener, ChangeList
 	@Override
 	public void mostrarError(String mensaje) {
 		JOptionPane.showMessageDialog(mainFrame, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+	}
+
+	@Override
+	public void cambiaEstado(int estadoAnterior, int estadoActual) {
+		btAdicionarAristas.setEnabled(estadoActual == GrafoManager.VISUALIZACION);
+		btAdicionarVertices.setEnabled(estadoActual == GrafoManager.VISUALIZACION);
+		btEliminar.setEnabled(estadoActual == GrafoManager.VISUALIZACION);
+		btCancelar.setVisible(estadoActual != GrafoManager.VISUALIZACION);
+		chAutonombrar.setVisible(estadoActual == GrafoManager.ADICION_VERTICES);
+		chEliminarSinPreguntar.setVisible(estadoActual == GrafoManager.ELIMINACION);
+	}
+
+	@Override
+	public void verticeSeleccionado(Vertice v) {
+		pnInfo.setVisible(true);
+		txInfoSeleccion.setText(v.toString());
+	}
+
+	@Override
+	public void aristaSeleccionada(Arista a) {
+		pnInfo.setVisible(true);
+		txInfoSeleccion.setText(a.toString());
+	}
+
+	@Override
+	public void seleccionaNada() {
+		pnInfo.setVisible(false);
 	}
 
 }
