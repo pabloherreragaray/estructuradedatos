@@ -14,5 +14,9 @@ public interface GrafoInterfaz {
 	void aristaSeleccionada(Arista a);
 	
 	void seleccionaNada();
+	
+	boolean eliminarArista(Arista a);
+	
+	boolean eliminarVertice(Vertice v);
 
 }

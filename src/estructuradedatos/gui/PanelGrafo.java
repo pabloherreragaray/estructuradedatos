@@ -1,10 +1,12 @@
 package estructuradedatos.gui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -22,8 +24,8 @@ public class PanelGrafo extends JPanel implements MouseListener, GrafoGraficador
 	public static final Color COLOR_VERTICE = Color.RED;
 	public static final Color COLOR_VERTICE_SELECCIONADO = Color.BLUE;
 	public static final Color COLOR_BORDE_VERTICE = Color.BLACK;
-	public static final Color COLOR_LINEA_ARISTA = Color.BLACK;
-	public static final Color COLOR_LINEA_ARISTA_SELECCIONADA = Color.BLUE;
+	public static final Color COLOR_LINEA_ARISTA = Color.LIGHT_GRAY;
+	public static final Color COLOR_LINEA_ARISTA_SELECCIONADA = Color.DARK_GRAY;
 	public static final int RADIO_VERTICE = 8;
 	public static final Color COLOR_TEXTO_VERTICE = Color.BLACK;
 
@@ -57,6 +59,8 @@ public class PanelGrafo extends JPanel implements MouseListener, GrafoGraficador
 		int ancho = (int) getPreferredSize().getWidth();
 		int alto = (int) getPreferredSize().getHeight();
 		g.fillRect(0, 0, ancho, alto);
+		Stroke oldStroke = g.getStroke();
+		g.setStroke(new BasicStroke(2));
 		for (Arista a : getGrafoManager().getGrafo().getAristas()) {
 			Vertice v1 = a.getVertice1();
 			Vertice v2 = a.getVertice2();
@@ -66,6 +70,7 @@ public class PanelGrafo extends JPanel implements MouseListener, GrafoGraficador
 			g.setPaint(seleccionada ? COLOR_LINEA_ARISTA_SELECCIONADA : COLOR_LINEA_ARISTA);
 			g.drawLine((int) v1.getX(), (int) v1.getY(), (int) v2.getX(), (int) v2.getY());
 		}
+		g.setStroke(oldStroke);
 		for (Vertice v : getGrafoManager().getGrafo().getVertices()) {
 			if (v.getX() > ancho || v.getY() > alto)
 				continue;

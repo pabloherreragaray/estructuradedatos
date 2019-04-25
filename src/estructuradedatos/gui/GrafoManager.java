@@ -1,5 +1,7 @@
 package estructuradedatos.gui;
 
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
@@ -50,6 +52,10 @@ public class GrafoManager {
 		for (GrafoEstadoListener listener : listeners) {
 			listener.cambiaEstado(anterior, this.estado);
 		}
+		verticeSeleccionado1 = verticeSeleccionado2 = null;
+		aristaSeleccionada = null;
+		if (graficador != null)
+			graficador.actualizar();
 	}
 
 	public int getEstado() {
@@ -118,16 +124,37 @@ public class GrafoManager {
 				verticeSeleccionado1 = verticeSeleccionado2 = null;
 			}
 		} else if (estado == ELIMINACION) {
+			int tipo = seleccionar(x, y, true, true, true);
+			boolean eliminar = true;
+			if (tipo == 1 && verticeSeleccionado1 != null) {
+				if (interfaz != null)
+					eliminar = interfaz.eliminarVertice(verticeSeleccionado1);
+			} else if (tipo == 2 && aristaSeleccionada != null) {
+				if (interfaz != null)
+					eliminar = interfaz.eliminarArista(aristaSeleccionada);
+			} else {
+				eliminar = false;
+			}
+			if (eliminar) {
+				if (tipo == 1)
+					grafo.eliminarVertice(verticeSeleccionado1.getNombre());
+				else if (tipo == 2)
+					grafo.eliminarArista(aristaSeleccionada);
+			}
+			verticeSeleccionado1 = null;
+			aristaSeleccionada = null;
+			if (eliminar && graficador != null)
+				graficador.actualizar();
 		} else if (estado == RUTA_MINIMA) {
 		} else {
+			verticeSeleccionado1 = verticeSeleccionado2 = null;
+			aristaSeleccionada = null;
 			int tipo = seleccionar(x, y, true, true, true);
 			if (tipo == 1 && verticeSeleccionado1 != null && interfaz != null)
 				interfaz.verticeSeleccionado(verticeSeleccionado1);
 			else if (tipo == 2 && aristaSeleccionada != null && interfaz != null)
 				interfaz.aristaSeleccionada(aristaSeleccionada);
 			else if (interfaz != null) {
-				verticeSeleccionado1 = verticeSeleccionado2 = null;
-				aristaSeleccionada = null;
 				interfaz.seleccionaNada();
 			}
 		}
@@ -383,7 +410,7 @@ public class GrafoManager {
 				tipo = 1;
 			}
 		}
-		if (aristas) {
+		if (aristas && tipo != 1) {
 			Arista a = getAristaEnCoordenadas(x, y);
 			if (a != null) {
 				aristaSeleccionada = a;
@@ -417,16 +444,15 @@ public class GrafoManager {
 		return sel;
 	}
 
-	private static double distanciaEntrePuntos(double x1, double y1, double x2, double y2) {
-		return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-	}
-
 	public static boolean puntoColisionaVertice(int x, int y, Vertice v) {
-		return distanciaEntrePuntos(x, y, v.getX(), v.getY()) <= hitboxVertice;
+		double distancia = Point2D.distance(v.getX(), v.getY(), x, y);
+		return distancia <= hitboxVertice;
 	}
 
 	public static boolean puntoColisionaArista(int x, int y, Arista a) {
-		return false;
+		double distancia = Line2D.ptSegDist(a.getVertice1().getX(), a.getVertice1().getY(), a.getVertice2().getX(),
+				a.getVertice2().getY(), x, y);
+		return distancia <= hitboxArista;
 	}
 
 	public boolean aristaEstaSeleccionada(Arista a) {

@@ -276,4 +276,21 @@ public class Grafo {
 		}
 		return res;
 	}
+
+	/**
+	 * Devuelve la lista de nombres de vértices conectados con un vértice dado
+	 * 
+	 * @param v Vertice a buscar conexiones
+	 * @return Lista de vértices conectados con "v"
+	 */
+	public List<String> getVerticesConectadosCon(String v) {
+		List<Arista> aristas = getAristasConVertice(v);
+		List<String> res = new ArrayList<String>();
+		for (Arista a : aristas) {
+			String otro = a.getVertice1().getNombre().equals(v) ? a.getVertice2().getNombre()
+					: a.getVertice1().getNombre();
+			res.add(otro);
+		}
+		return res;
+	}
 }

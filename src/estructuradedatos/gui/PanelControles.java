@@ -5,6 +5,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -17,7 +18,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
-import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -42,7 +42,7 @@ public class PanelControles extends JPanel
 	private JCheckBox chEliminarSinPreguntar;
 	private JSpinner txAnchoPanel;
 	private JSpinner txAltoPanel;
-	private JTextArea txInfoSeleccion;
+	private JLabel txInfoSeleccion;
 	private JPanel pnInfo;
 	private JMenuItem miGuardar;
 	private JMenuItem miGuardarComo;
@@ -88,8 +88,7 @@ public class PanelControles extends JPanel
 		JPanel pnDimension = new JPanel();
 		pnDimension.setLayout(new GridBagLayout());
 		pnDimension.setBorder(BorderFactory.createTitledBorder("Tamaño del grafo"));
-		txInfoSeleccion = new JTextArea();
-		txInfoSeleccion.setRows(5);
+		txInfoSeleccion = new JLabel();
 		pnInfo = new JPanel();
 		pnInfo.setLayout(new BorderLayout());
 		pnInfo.setBorder(BorderFactory.createTitledBorder("Ítem seleccionado"));
@@ -320,21 +319,80 @@ public class PanelControles extends JPanel
 		chEliminarSinPreguntar.setVisible(estadoActual == GrafoManager.ELIMINACION);
 	}
 
+	private String getVerticeInfo(Vertice v) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<html><table>");
+		sb.append("<tr><th colspan='2'>Vertice</th></tr>");
+		sb.append("<tr><th>Nombre</th><td>").append(v.getNombre()).append("</td></tr>");
+		sb.append("<tr><th>X</th><td>").append(v.getX()).append("</td></tr>");
+		sb.append("<tr><th>Y</th><td>").append(v.getY()).append("</td></tr>");
+		sb.append("<tr><th>Conectado con:</th><td>");
+		List<String> verticesConectados = getGrafoManager().getGrafo().getVerticesConectadosCon(v.getNombre());
+		boolean separador = false;
+		for (String n : verticesConectados) {
+			if (separador)
+				sb.append("<br/>");
+			else
+				separador = true;
+			sb.append(n);
+		}
+		sb.append("</td></tr>");
+		sb.append("</table></html>");
+		return sb.toString();
+	}
+
+	private String getAristaInfo(Arista a) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<html><table>");
+		sb.append("<tr><th colspan='2'>Arista</th></tr>");
+		sb.append("<tr><th>Vértice 1</th><td>").append(a.getVertice1().getNombre()).append("</td></tr>");
+		sb.append("<tr><th>Vértice 2</th><td>").append(a.getVertice2().getNombre()).append("</td></tr>");
+		sb.append("<tr><th>Distancia</th><td>").append(Math.round(a.getDistancia())).append("</td></tr>");
+		sb.append("</table></html>");
+		return sb.toString();
+	}
+
 	@Override
 	public void verticeSeleccionado(Vertice v) {
 		pnInfo.setVisible(true);
-		txInfoSeleccion.setText(v.toString());
+		txInfoSeleccion.setText(getVerticeInfo(v));
 	}
 
 	@Override
 	public void aristaSeleccionada(Arista a) {
 		pnInfo.setVisible(true);
-		txInfoSeleccion.setText(a.toString());
+		txInfoSeleccion.setText(getAristaInfo(a));
 	}
 
 	@Override
 	public void seleccionaNada() {
 		pnInfo.setVisible(false);
+	}
+
+	private boolean mostrarConfirmacion(String mensaje, String titulo) {
+		int result = JOptionPane.showConfirmDialog(mainFrame, mensaje, titulo, JOptionPane.YES_NO_OPTION);
+		return result == JOptionPane.YES_OPTION;
+	}
+
+	@Override
+	public boolean eliminarArista(Arista a) {
+		if (chEliminarSinPreguntar.isSelected())
+			return true;
+		else {
+			String mensaje = "¿Desea eliminar la arista que conecta los vértices " + a.getVertice1().getNombre() + " y "
+					+ a.getVertice2().getNombre() + "?";
+			return mostrarConfirmacion(mensaje, "Eliminar arista");
+		}
+	}
+
+	@Override
+	public boolean eliminarVertice(Vertice v) {
+		if (chEliminarSinPreguntar.isSelected())
+			return true;
+		else {
+			String mensaje = "¿Desea eliminar el vértice " + v.getNombre() + "?";
+			return mostrarConfirmacion(mensaje, "Eliminar vértice");
+		}
 	}
 
 }
