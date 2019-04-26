@@ -7,6 +7,7 @@ import estructuradedatos.gui.MainFrame;
 
 /**
  * Clase de inicio del programa
+ * 
  * @author Pablo Herrera
  *
  */

@@ -93,13 +93,10 @@ public class Grafo {
 	 * @param x X
 	 * @param y Y
 	 * @return Vértice añadido
+	 * @throws Exception 
 	 */
-	public Vertice adicionarVertice(double x, double y) {
-		try {
-			return adicionarVertice(new Vertice(x, y));
-		} catch (Exception e) {
-			return null;
-		}
+	public Vertice adicionarVertice(double x, double y) throws Exception {
+		return adicionarVertice(new Vertice(x, y));
 	}
 
 	/**

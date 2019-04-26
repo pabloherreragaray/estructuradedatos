@@ -80,8 +80,8 @@ public class RutaMinimaGrafo {
 	/**
 	 * Calcula la ruta mínima
 	 * 
-	 * @throws Exception Lnza error si no se encontró los vértices inicial o final, o
-	 *                   si no hay una ruta entre los dos vértices
+	 * @throws Exception Lnza error si no se encontró los vértices inicial o final,
+	 *                   o si no hay una ruta entre los dos vértices
 	 */
 	public void calcular() throws Exception {
 		matrizNodos = new ArrayList<NodoRutaMinimaGrafo>();
@@ -107,7 +107,6 @@ public class RutaMinimaGrafo {
 			List<Arista> aristas = getGrafo().getAristasConVertice(nodoActual.getVertice());
 			if (aristas.size() == 0)
 				break;
-			NodoRutaMinimaGrafo nodoMinimo = null;
 			for (Arista a : aristas) {
 				double distanciaArista = a.getDistancia() + nodoActual.getDistancia();
 				String otro = a.getVertice1().getNombre().equals(nodoActual.getVertice()) ? a.getVertice2().getNombre()
@@ -119,12 +118,16 @@ public class RutaMinimaGrafo {
 								nodo.setDistancia(distanciaArista);
 								nodo.setPredecesor(nodoActual);
 							}
-							if (nodoMinimo == null || nodoMinimo.getDistancia() > nodo.getDistancia()) {
-								nodoMinimo = nodo;
-							}
 						}
 						break;
 					}
+				}
+			}
+			NodoRutaMinimaGrafo nodoMinimo = null;
+			for (NodoRutaMinimaGrafo nodo : matrizNodos) {
+				if (!nodo.isDefinitivo() && nodo.getDistancia() < Double.MAX_VALUE
+						&& (nodoMinimo == null || nodoMinimo.getDistancia() > nodo.getDistancia())) {
+					nodoMinimo = nodo;
 				}
 			}
 			if (nodoMinimo == null)
@@ -147,5 +150,26 @@ public class RutaMinimaGrafo {
 		for (int i = temp.size() - 1; i >= 0; i--) {
 			vertices.add(temp.get(i));
 		}
+	}
+
+	/**
+	 * Devuelve la lista de aristas implicadas en la ruta mínima, en el orden del
+	 * recorrido
+	 * 
+	 * @return Lista de aristas de la ruta mínima
+	 */
+	public List<Arista> getListaAristas() {
+		List<Arista> res = new ArrayList<Arista>();
+		if (vertices != null && vertices.size() >= 2) {
+			String va = null;
+			for (String v : vertices) {
+				if (va != null) {
+					Arista a = grafo.getArista(v, va);
+					res.add(a);
+				}
+				va = v;
+			}
+		}
+		return res;
 	}
 }

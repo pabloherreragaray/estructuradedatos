@@ -1,6 +1,7 @@
 package estructuradedatos.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -24,8 +25,15 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import estructuradedatos.grafo.Arista;
+import estructuradedatos.grafo.RutaMinimaGrafo;
 import estructuradedatos.grafo.Vertice;
 
+/**
+ * Panel de controles para manipular el grafo
+ * 
+ * @author Pablo Herrera
+ *
+ */
 public class PanelControles extends JPanel
 		implements ActionListener, ChangeListener, GrafoInterfaz, GrafoEstadoListener {
 
@@ -49,9 +57,21 @@ public class PanelControles extends JPanel
 	private JMenuItem miAbrir;
 	private JMenuItem miCerrar;
 	private JMenuItem miNuevo;
+	private JPanel pnRutaMinima;
+	private JButton btRutaMinima;
+	private JLabel lbRutaMinimaVertice1;
+	private JLabel lbRutaMinimaVertice2;
+	private JLabel lbRutaMinimaDistancia;
+	private JLabel lbRutaMinimaListaVertices;
+	private JButton btVolverCalcularRM;
 
 	private String archivoActual;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param mf Ventana principal
+	 */
 	public PanelControles(MainFrame mf) {
 		super();
 		mainFrame = mf;
@@ -93,6 +113,17 @@ public class PanelControles extends JPanel
 		pnInfo.setLayout(new BorderLayout());
 		pnInfo.setBorder(BorderFactory.createTitledBorder("Ítem seleccionado"));
 		pnInfo.setVisible(false);
+		pnRutaMinima = new JPanel();
+		pnRutaMinima.setLayout(new GridBagLayout());
+		pnRutaMinima.setBorder(BorderFactory.createTitledBorder("Cálculo ruta mínima"));
+		pnRutaMinima.setVisible(false);
+		btRutaMinima = new JButton("Calcular Ruta mínima");
+		btRutaMinima.setBackground(Color.ORANGE);
+		lbRutaMinimaVertice1 = new JLabel();
+		lbRutaMinimaVertice2 = new JLabel();
+		lbRutaMinimaDistancia = new JLabel();
+		lbRutaMinimaListaVertices = new JLabel();
+		btVolverCalcularRM = new JButton("Volver a calcular");
 
 		// Se adicionan al panel
 		gc = new GridBagConstraints();
@@ -114,20 +145,25 @@ public class PanelControles extends JPanel
 		gc.gridx = 0;
 		gc.gridy = 3;
 		gc.fill = GridBagConstraints.HORIZONTAL;
-		panelSuperior.add(btCancelar, gc);
+		panelSuperior.add(btRutaMinima, gc);
 		gc = new GridBagConstraints();
 		gc.gridx = 0;
 		gc.gridy = 4;
 		gc.fill = GridBagConstraints.HORIZONTAL;
-		panelSuperior.add(chAutonombrar, gc);
+		panelSuperior.add(btCancelar, gc);
 		gc = new GridBagConstraints();
 		gc.gridx = 0;
 		gc.gridy = 5;
 		gc.fill = GridBagConstraints.HORIZONTAL;
-		panelSuperior.add(chEliminarSinPreguntar, gc);
+		panelSuperior.add(chAutonombrar, gc);
 		gc = new GridBagConstraints();
 		gc.gridx = 0;
 		gc.gridy = 6;
+		gc.fill = GridBagConstraints.HORIZONTAL;
+		panelSuperior.add(chEliminarSinPreguntar, gc);
+		gc = new GridBagConstraints();
+		gc.gridx = 0;
+		gc.gridy = 7;
 		gc.fill = GridBagConstraints.HORIZONTAL;
 		panelSuperior.add(pnDimension, gc);
 		gc = new GridBagConstraints();
@@ -150,10 +186,69 @@ public class PanelControles extends JPanel
 		pnDimension.add(txAltoPanel, gc);
 		gc = new GridBagConstraints();
 		gc.gridx = 0;
-		gc.gridy = 7;
+		gc.gridy = 8;
 		gc.fill = GridBagConstraints.HORIZONTAL;
 		panelSuperior.add(pnInfo, gc);
 		pnInfo.add(txInfoSeleccion, BorderLayout.CENTER);
+		gc = new GridBagConstraints();
+		gc.gridx = 0;
+		gc.gridy = 9;
+		gc.fill = GridBagConstraints.HORIZONTAL;
+		panelSuperior.add(pnRutaMinima, gc);
+		gc = new GridBagConstraints();
+		gc.gridx = 0;
+		gc.gridy = 0;
+		gc.gridwidth = 1;
+		gc.fill = GridBagConstraints.HORIZONTAL;
+		pnRutaMinima.add(new JLabel("Vértice inicial"), gc);
+		gc = new GridBagConstraints();
+		gc.gridx = 1;
+		gc.gridy = 0;
+		gc.gridwidth = 1;
+		gc.fill = GridBagConstraints.HORIZONTAL;
+		pnRutaMinima.add(lbRutaMinimaVertice1, gc);
+		gc = new GridBagConstraints();
+		gc.gridx = 0;
+		gc.gridy = 1;
+		gc.gridwidth = 1;
+		gc.fill = GridBagConstraints.HORIZONTAL;
+		pnRutaMinima.add(new JLabel("Vértice final"), gc);
+		gc = new GridBagConstraints();
+		gc.gridx = 1;
+		gc.gridy = 1;
+		gc.gridwidth = 1;
+		gc.fill = GridBagConstraints.HORIZONTAL;
+		pnRutaMinima.add(lbRutaMinimaVertice2, gc);
+		gc = new GridBagConstraints();
+		gc.gridx = 0;
+		gc.gridy = 2;
+		gc.gridwidth = 1;
+		gc.fill = GridBagConstraints.HORIZONTAL;
+		pnRutaMinima.add(new JLabel("Distancia"), gc);
+		gc = new GridBagConstraints();
+		gc.gridx = 1;
+		gc.gridy = 2;
+		gc.gridwidth = 1;
+		gc.fill = GridBagConstraints.HORIZONTAL;
+		pnRutaMinima.add(lbRutaMinimaDistancia, gc);
+		gc = new GridBagConstraints();
+		gc.gridx = 0;
+		gc.gridy = 3;
+		gc.gridwidth = 1;
+		gc.fill = GridBagConstraints.HORIZONTAL;
+		pnRutaMinima.add(new JLabel("Lista de vértices"), gc);
+		gc = new GridBagConstraints();
+		gc.gridx = 1;
+		gc.gridy = 3;
+		gc.gridwidth = 1;
+		gc.fill = GridBagConstraints.HORIZONTAL;
+		pnRutaMinima.add(lbRutaMinimaListaVertices, gc);
+		gc = new GridBagConstraints();
+		gc.gridx = 0;
+		gc.gridy = 4;
+		gc.gridwidth = 1;
+		gc.fill = GridBagConstraints.HORIZONTAL;
+		pnRutaMinima.add(btVolverCalcularRM, gc);
 
 		// Se crean los menús
 		JMenuBar menuBar = new JMenuBar();
@@ -184,6 +279,8 @@ public class PanelControles extends JPanel
 		miAbrir.addActionListener(this);
 		miNuevo.addActionListener(this);
 		miCerrar.addActionListener(this);
+		btRutaMinima.addActionListener(this);
+		btVolverCalcularRM.addActionListener(this);
 	}
 
 	private GrafoManager getGrafoManager() {
@@ -267,6 +364,14 @@ public class PanelControles extends JPanel
 		mainFrame.dispose();
 	}
 
+	private void accionRutaMinima() {
+		lbRutaMinimaVertice1.setText("");
+		lbRutaMinimaVertice2.setText("");
+		lbRutaMinimaDistancia.setText("");
+		lbRutaMinimaListaVertices.setText("");
+		getGrafoManager().setEstadoRutaMinima();
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == btAdicionarAristas)
@@ -287,6 +392,10 @@ public class PanelControles extends JPanel
 			accionNuevo();
 		else if (e.getSource() == miCerrar)
 			accionCerrar();
+		else if (e.getSource() == btRutaMinima)
+			accionRutaMinima();
+		else if (e.getSource() == btVolverCalcularRM)
+			accionRutaMinima();
 	}
 
 	@Override
@@ -314,9 +423,11 @@ public class PanelControles extends JPanel
 		btAdicionarAristas.setEnabled(estadoActual == GrafoManager.VISUALIZACION);
 		btAdicionarVertices.setEnabled(estadoActual == GrafoManager.VISUALIZACION);
 		btEliminar.setEnabled(estadoActual == GrafoManager.VISUALIZACION);
+		btRutaMinima.setEnabled(estadoActual == GrafoManager.VISUALIZACION);
 		btCancelar.setVisible(estadoActual != GrafoManager.VISUALIZACION);
 		chAutonombrar.setVisible(estadoActual == GrafoManager.ADICION_VERTICES);
 		chEliminarSinPreguntar.setVisible(estadoActual == GrafoManager.ELIMINACION);
+		pnRutaMinima.setVisible(estadoActual == GrafoManager.RUTA_MINIMA);
 	}
 
 	private String getVerticeInfo(Vertice v) {
@@ -393,6 +504,30 @@ public class PanelControles extends JPanel
 			String mensaje = "¿Desea eliminar el vértice " + v.getNombre() + "?";
 			return mostrarConfirmacion(mensaje, "Eliminar vértice");
 		}
+	}
+
+	@Override
+	public void obtieneRutaMinima() {
+		RutaMinimaGrafo r = getGrafoManager().getRutaMinima();
+		if (r == null) {
+			mostrarError("Ruta mínima es nula");
+			return;
+		}
+		lbRutaMinimaDistancia.setText(String.valueOf((int) r.getDistancia()));
+		StringBuilder sb = new StringBuilder();
+		sb.append("<html><ol>");
+		List<String> listaVertices = r.getVertices();
+		for (String v : listaVertices) {
+			sb.append("<li>").append(v).append("</li>");
+		}
+		sb.append("</ol></html>");
+		lbRutaMinimaListaVertices.setText(sb.toString());
+	}
+
+	@Override
+	public void obtieneVerticeRutaMinima(Vertice v, boolean inicial) {
+		JLabel lb = inicial ? lbRutaMinimaVertice1 : lbRutaMinimaVertice2;
+		lb.setText(v.getNombre());
 	}
 
 }

@@ -131,4 +131,12 @@ public class Vertice {
 		return "Vértice ".concat(getNombre()).concat(" (").concat(String.valueOf(getX())).concat(", ")
 				.concat(String.valueOf(getY())).concat(")");
 	}
+
+	public static int getContadorLetra() {
+		return contadorLetra;
+	}
+
+	public static void setContadorLetra(int contadorLetra) {
+		Vertice.contadorLetra = contadorLetra;
+	}
 }

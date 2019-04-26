@@ -7,6 +7,12 @@ import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
+/**
+ * Ventana principal del aplicativo
+ * 
+ * @author Pablo Herrera
+ *
+ */
 public class MainFrame extends JFrame {
 
 	/**
@@ -18,6 +24,9 @@ public class MainFrame extends JFrame {
 	private PanelControles panelControles;
 	private PanelBarraEstado panelBarraEstado;
 
+	/**
+	 * Constructor
+	 */
 	public MainFrame() {
 		super();
 		grafoManager = new GrafoManager();
@@ -41,18 +50,38 @@ public class MainFrame extends JFrame {
 		add(panelBarraEstado, BorderLayout.SOUTH);
 	}
 
+	/**
+	 * Devuelve el manejador del grafo
+	 * 
+	 * @return Manejador del grafo
+	 */
 	public GrafoManager getGrafoManager() {
 		return grafoManager;
 	}
 
+	/**
+	 * Devuelve el panel que grafica
+	 * 
+	 * @return Panel que grafica
+	 */
 	public PanelGrafo getPanelGrafo() {
 		return panelGrafo;
 	}
 
+	/**
+	 * Devuelve el panel de controles
+	 * 
+	 * @return Panel de controles
+	 */
 	public PanelControles getPanelControles() {
 		return panelControles;
 	}
 
+	/**
+	 * Devuelve el panel que muestra el estado
+	 * 
+	 * @return Panel que muestra el estado
+	 */
 	public PanelBarraEstado getPanelBarraEstado() {
 		return panelBarraEstado;
 	}

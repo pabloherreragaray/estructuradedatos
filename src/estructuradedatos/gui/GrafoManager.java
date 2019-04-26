@@ -18,15 +18,43 @@ import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
 import estructuradedatos.grafo.Arista;
 import estructuradedatos.grafo.Grafo;
+import estructuradedatos.grafo.RutaMinimaGrafo;
 import estructuradedatos.grafo.Vertice;
 
+/**
+ * Clase controladora del grafo en su parte visual
+ * 
+ * @author Pablo Herrera
+ *
+ */
 public class GrafoManager {
+	/**
+	 * Estado de visualización (estado normal)
+	 */
 	public static final int VISUALIZACION = 0;
+	/**
+	 * Estado de adición de aristas
+	 */
 	public static final int ADICION_ARISTAS = 2;
+	/**
+	 * Estado de adición de vértices
+	 */
 	public static final int ADICION_VERTICES = 1;
+	/**
+	 * Estado de eliminación de vértices y aristas
+	 */
 	public static final int ELIMINACION = 3;
+	/**
+	 * Estado de selección de vértices para la ruta mínima
+	 */
 	public static final int RUTA_MINIMA = 4;
+	/**
+	 * Zona sensible para hacer clic sobre un vértice
+	 */
 	public static int hitboxVertice = 10;
+	/**
+	 * Zona sensible para hacer clic sobre una arista
+	 */
 	public static int hitboxArista = 10;
 
 	private Grafo grafo;
@@ -39,7 +67,13 @@ public class GrafoManager {
 	private GrafoGraficador graficador;
 	private int anchoGrafo;
 	private int altoGrafo;
+	private RutaMinimaGrafo rutaMinima;
+	private List<Arista> aristasRutaMinima;
+	private List<String> verticesRutaMinima;
 
+	/**
+	 * Constructor
+	 */
 	public GrafoManager() {
 		grafo = new Grafo();
 		listeners = new ArrayList<GrafoEstadoListener>();
@@ -54,38 +88,73 @@ public class GrafoManager {
 		}
 		verticeSeleccionado1 = verticeSeleccionado2 = null;
 		aristaSeleccionada = null;
+		rutaMinima = null;
+		aristasRutaMinima = null;
+		verticesRutaMinima = null;
 		if (graficador != null)
 			graficador.actualizar();
 	}
 
+	/**
+	 * Obtiene el estado del manejador
+	 * 
+	 * @return Estado
+	 */
 	public int getEstado() {
 		return estado;
 	}
 
+	/**
+	 * Cambia el estado a adición de vértices
+	 */
 	public void setEstadoAdicionVertices() {
 		setEstado(ADICION_VERTICES);
 	}
 
+	/**
+	 * Cambia el estado a adición de aristas
+	 */
 	public void setEstadoAdicionAristas() {
 		setEstado(ADICION_ARISTAS);
 	}
 
+	/**
+	 * Cambia el estado a eliminación de vértices y aristas
+	 */
 	public void setEstadoEliminacion() {
 		setEstado(ELIMINACION);
 	}
 
+	/**
+	 * Cambia el estado a selección de vértices para ruta mínima
+	 */
 	public void setEstadoRutaMinima() {
 		setEstado(RUTA_MINIMA);
 	}
 
+	/**
+	 * Cambia el estado a visualización (normal)
+	 */
 	public void setEstadoNormal() {
 		setEstado(VISUALIZACION);
 	}
 
+	/**
+	 * Adiciona un listener (GrafoEstadoListener) al manejador
+	 * 
+	 * @param listener Nuevo listener
+	 */
 	public void adicionarListener(GrafoEstadoListener listener) {
 		listeners.add(listener);
 	}
 
+	/**
+	 * Crea un vértice a partir de sus coordenadas. El nombre del nuevo vértice será
+	 * preguntado a la interfaz
+	 * 
+	 * @param x Posición X
+	 * @param y Posición Y
+	 */
 	public void crearVerticeEnCoordenadas(int x, int y) {
 		String nombre = interfaz == null ? null : interfaz.obtenerNombreVertice();
 		try {
@@ -99,14 +168,30 @@ public class GrafoManager {
 		}
 	}
 
+	/**
+	 * Obtiene la interfaz (GrafoInterfaz) del manejador
+	 * 
+	 * @return
+	 */
 	public GrafoInterfaz getInterfaz() {
 		return interfaz;
 	}
 
+	/**
+	 * Modifica la interfaz (GrafoInterfaz) del manejador
+	 * 
+	 * @param interfaz
+	 */
 	public void setInterfaz(GrafoInterfaz interfaz) {
 		this.interfaz = interfaz;
 	}
 
+	/**
+	 * Se indica que el usuario ha hecho clic en una coordenada
+	 * 
+	 * @param x Posición X
+	 * @param y Posición Y
+	 */
 	public void clicEn(int x, int y) {
 		if (estado == ADICION_VERTICES) {
 			crearVerticeEnCoordenadas(x, y);
@@ -146,6 +231,30 @@ public class GrafoManager {
 			if (eliminar && graficador != null)
 				graficador.actualizar();
 		} else if (estado == RUTA_MINIMA) {
+			int tipo = seleccionar(x, y, true, false, false);
+			if (tipo == 1) {
+				if (verticeSeleccionado2 == null && interfaz != null)
+					interfaz.obtieneVerticeRutaMinima(verticeSeleccionado1, true);
+				else {
+					if (interfaz != null)
+						interfaz.obtieneVerticeRutaMinima(verticeSeleccionado2, false);
+					try {
+						rutaMinima = grafo.getRutaMinima(verticeSeleccionado1.getNombre(),
+								verticeSeleccionado2.getNombre());
+						aristasRutaMinima = rutaMinima.getListaAristas();
+						verticesRutaMinima = rutaMinima.getVertices();
+						if (interfaz != null)
+							interfaz.obtieneRutaMinima();
+						if (graficador != null)
+							graficador.actualizar();
+						verticeSeleccionado1 = verticeSeleccionado2 = null;
+						aristaSeleccionada = null;
+					} catch (Exception e) {
+						if (interfaz != null)
+							interfaz.mostrarError(e.getMessage());
+					}
+				}
+			}
 		} else {
 			verticeSeleccionado1 = verticeSeleccionado2 = null;
 			aristaSeleccionada = null;
@@ -162,15 +271,27 @@ public class GrafoManager {
 			graficador.actualizar();
 	}
 
+	/**
+	 * Devuelve el grafo
+	 * 
+	 * @return Grafo
+	 */
 	public Grafo getGrafo() {
 		return grafo;
 	}
 
+	/**
+	 * Devuelve el grafo como un documento XML
+	 * 
+	 * @return Documento XML
+	 * @throws Exception Error al componer el XML
+	 */
 	public Document getGrafoComoXml() throws Exception {
 		Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element root = doc.createElement("grafo");
 		root.setAttribute("ancho", String.valueOf(getAnchoGrafo()));
 		root.setAttribute("alto", String.valueOf(getAltoGrafo()));
+		root.setAttribute("contadorletra", String.valueOf(Vertice.getContadorLetra()));
 		guardarVertices(doc, root);
 		guardarAristas(doc, root);
 		doc.appendChild(root);
@@ -210,6 +331,12 @@ public class GrafoManager {
 		docroot.appendChild(root);
 	}
 
+	/**
+	 * Guarda el grafo como un archivo XML
+	 * 
+	 * @param archivo Ruta del archivo
+	 * @throws Exception Error al componer el XML o guardarlo
+	 */
 	public void guardarGrafoXmlComo(String archivo) throws Exception {
 		Document doc;
 		try {
@@ -228,6 +355,12 @@ public class GrafoManager {
 		}
 	}
 
+	/**
+	 * Construye el grafo desde un elemento XML
+	 * 
+	 * @param root Elemento XML
+	 * @throws Exception Error al construir el grafo o de sintaxis del XML
+	 */
 	public void setGrafoDesdeXml(Element root) throws Exception {
 		grafo = new Grafo();
 		try {
@@ -238,6 +371,11 @@ public class GrafoManager {
 		try {
 			int alto = Integer.parseInt(root.getAttribute("alto"));
 			setAltoGrafo(alto);
+		} catch (Exception e) {
+		}
+		try {
+			int contadorLetra = Integer.parseInt(root.getAttribute("contadorletra"));
+			Vertice.setContadorLetra(contadorLetra);
 		} catch (Exception e) {
 		}
 		NodeList nodos = root.getChildNodes();
@@ -339,6 +477,13 @@ public class GrafoManager {
 		grafo.adicionarArista(nombre1, nombre2);
 	}
 
+	/**
+	 * Abre el grafo desde un archivo XML
+	 * 
+	 * @param archivo Nombre del archivo XML
+	 * @throws Exception Error al construir el grafo, de sintaxis XML o al abrir el
+	 *                   archivo
+	 */
 	public void abrirGrafoDesdeXml(String archivo) throws Exception {
 		Document doc = null;
 		try {
@@ -359,40 +504,87 @@ public class GrafoManager {
 		}
 	}
 
+	/**
+	 * Crea un nuevo grafo
+	 */
 	public void nuevoGrafo() {
 		grafo = new Grafo();
 		if (graficador != null)
 			graficador.actualizar();
 	}
 
+	/**
+	 * Devuelve el ancho del grafo
+	 * 
+	 * @return Ancho del grafo
+	 */
 	public int getAnchoGrafo() {
 		return anchoGrafo;
 	}
 
+	/**
+	 * Modifica el ancho del grafo
+	 * 
+	 * @param anchoGrafo Nuevo ancho del grafo
+	 */
 	public void setAnchoGrafo(int anchoGrafo) {
 		this.anchoGrafo = anchoGrafo;
 		if (graficador != null)
 			graficador.setDimension(anchoGrafo, altoGrafo);
 	}
 
+	/**
+	 * Devuelve el alto del grafo
+	 * 
+	 * @return Alto del grafo
+	 */
 	public int getAltoGrafo() {
 		return altoGrafo;
 	}
 
+	/**
+	 * Modifica el alto del grafo
+	 * 
+	 * @param altoGrafo Nuevo alto del grafo
+	 */
 	public void setAltoGrafo(int altoGrafo) {
 		this.altoGrafo = altoGrafo;
 		if (graficador != null)
 			graficador.setDimension(anchoGrafo, altoGrafo);
 	}
 
+	/**
+	 * Devuelve el graficador (GrafoGraficador)
+	 * 
+	 * @return Graficador
+	 */
 	public GrafoGraficador getGraficador() {
 		return graficador;
 	}
 
+	/**
+	 * Modifica el graficador (GrafoGraficador)
+	 * 
+	 * @param graficador Nuevo graficador
+	 */
 	public void setGraficador(GrafoGraficador graficador) {
 		this.graficador = graficador;
 	}
 
+	/**
+	 * Selecciona el vértice o arista en una coordenada dada
+	 * 
+	 * @param x             Posición X
+	 * @param y             Posición Y
+	 * @param vertices      Si es true, selecciona vértices
+	 * @param aristas       Si es true, selecciona aristas
+	 * @param soloUnVertice Si es true, selecciona un solo vértice
+	 *                      (verticeSeleccionado1). De lo contrario, selecciona
+	 *                      primero verticeSeleccionado1 y luego
+	 *                      verticeSeleccionado2
+	 * @return 1 si seleccionó un vértice, 2 si seleccionó una arista, 0 si no
+	 *         seleccionó nada
+	 */
 	public int seleccionar(int x, int y, boolean vertices, boolean aristas, boolean soloUnVertice) {
 		int tipo = 0;
 		if (vertices) {
@@ -444,23 +636,78 @@ public class GrafoManager {
 		return sel;
 	}
 
+	/**
+	 * Indica si una coordenada colisiona con un vértice dado
+	 * 
+	 * @param x Posición X
+	 * @param y Posición Y
+	 * @param v Vértice
+	 * @return true si colisiona
+	 */
 	public static boolean puntoColisionaVertice(int x, int y, Vertice v) {
 		double distancia = Point2D.distance(v.getX(), v.getY(), x, y);
 		return distancia <= hitboxVertice;
 	}
 
+	/**
+	 * Indica si una coordenada colisiona con una arista dada
+	 * 
+	 * @param x Posición X
+	 * @param y Posición Y
+	 * @param a Arista
+	 * @return true si colisiona
+	 */
 	public static boolean puntoColisionaArista(int x, int y, Arista a) {
 		double distancia = Line2D.ptSegDist(a.getVertice1().getX(), a.getVertice1().getY(), a.getVertice2().getX(),
 				a.getVertice2().getY(), x, y);
 		return distancia <= hitboxArista;
 	}
 
+	/**
+	 * Indica si una arista está seleccionada
+	 * 
+	 * @param a Arista
+	 * @return true si está seleccionada
+	 */
 	public boolean aristaEstaSeleccionada(Arista a) {
 		return a == aristaSeleccionada;
 	}
 
+	/**
+	 * Indica si un vértice está seleccionado
+	 * 
+	 * @param v Vértice
+	 * @return true si está seleccionado
+	 */
 	public boolean verticeEstaSeleccionado(Vertice v) {
 		return v == verticeSeleccionado1 || v == verticeSeleccionado2;
+	}
+
+	/**
+	 * Devuelve la ruta mínima calculada
+	 * 
+	 * @return Ruta mínima calculada
+	 */
+	public RutaMinimaGrafo getRutaMinima() {
+		return rutaMinima;
+	}
+
+	/**
+	 * Devuelve la lista de aristas de la ruta mínima
+	 * 
+	 * @return Lista de aristas
+	 */
+	public List<Arista> getAristasRutaMinima() {
+		return aristasRutaMinima == null ? new ArrayList<Arista>() : aristasRutaMinima;
+	}
+
+	/**
+	 * Devuelve la lista de nombres de los vértices de la ruta mínima
+	 * 
+	 * @return Lista de nombres de vértices
+	 */
+	public List<String> getVerticesRutaMinima() {
+		return verticesRutaMinima == null ? new ArrayList<String>() : verticesRutaMinima;
 	}
 
 }
