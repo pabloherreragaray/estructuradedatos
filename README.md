@@ -35,3 +35,5 @@ Si ejecuta el programa por línea de comandos puede cambiar el aspecto pasándol
 * Ningún parámetro o "nimbus": abre el programa con el tema Nimbus.
 * "windows": abre el programa con el tema estándar de Windows (solo funciona en Windows).
 * "metal": abre el programa con el tema Metal, que es el estándar de Java.
+
+Ejemplo: "java -jar ./GrafoRutaMinima.jar metal"
