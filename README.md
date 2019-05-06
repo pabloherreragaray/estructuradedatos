@@ -5,6 +5,10 @@ El objetivo principal del programa será permitirle al usuario construir un graf
 
 El proyecto está desarrollado en Java usando Eclipse como IDE.
 
+## Descarga
+
+Para descargar el programa haga clic en este enlace: https://github.com/pabloherreragaray/estructuradedatos/releases
+
 ## Requisitos para usarlo
 
 * JRE 7 o superior instalado.
